@@ -1,8 +1,9 @@
 // Example module handlers that show where request handling logic belongs.
 import type { Context } from "hono";
 
+import type { AppHonoEnv } from "@/types/app";
 import { successResponse } from "@/utils/response";
 
-export const getExample = (c: Context) => {
+export const getExample = (c: Context<AppHonoEnv>) => {
   return c.json(successResponse(null, "Example module is registered"));
 };

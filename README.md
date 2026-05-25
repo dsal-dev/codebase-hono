@@ -12,6 +12,7 @@ Backend REST API scaffold menggunakan Bun, TypeScript, Hono, Drizzle ORM, dan Po
 | ORM | Drizzle ORM |
 | Database | PostgreSQL |
 | Validation | Zod + @hono/zod-validator |
+| Logging | Pino |
 
 ## Tree Structure
 
@@ -39,8 +40,10 @@ Backend REST API scaffold menggunakan Bun, TypeScript, Hono, Drizzle ORM, dan Po
 │   ├── routes/
 │   │   └── index.ts
 │   ├── types/
+│   │   ├── app.ts
 │   │   └── common.ts
 │   ├── utils/
+│   │   ├── logger.ts
 │   │   └── response.ts
 │   └── index.ts
 ├── .env.example
@@ -62,7 +65,7 @@ Backend REST API scaffold menggunakan Bun, TypeScript, Hono, Drizzle ORM, dan Po
 | `src/db/index.ts` | Setup koneksi PostgreSQL menggunakan `postgres` dan instance Drizzle ORM yang siap digunakan di seluruh aplikasi. |
 | `src/db/schema/index.ts` | Single entry point untuk semua schema Drizzle. Saat ini berisi placeholder table `users`. |
 | `src/db/migrations/` | Direktori output file migration yang dibuat oleh `drizzle-kit generate`. |
-| `src/middlewares/logger.ts` | Middleware request logger untuk mencatat method, path, status, dan response time. |
+| `src/middlewares/logger.ts` | Middleware request logger berbasis Pino untuk mencatat method, path, status, response time, dan `requestId`. Middleware ini juga memasang child logger request-scoped ke `c.var.logger`. |
 | `src/middlewares/cors.ts` | Middleware konfigurasi CORS global menggunakan `hono/cors`. |
 | `src/middlewares/security.ts` | Middleware security headers menggunakan `hono/secure-headers`. |
 | `src/middlewares/error-handler.ts` | Centralized error handler untuk menjaga format response error tetap konsisten. Juga menyediakan `AppError` untuk error aplikasi. |
@@ -71,7 +74,9 @@ Backend REST API scaffold menggunakan Bun, TypeScript, Hono, Drizzle ORM, dan Po
 | `src/modules/example/example.routes.ts` | Definisi route untuk example module. |
 | `src/modules/example/example.handler.ts` | Handler route untuk example module. Logic request-response module ditempatkan di sini. |
 | `src/modules/example/example.schema.ts` | Schema Zod untuk validasi request/response module. |
+| `src/types/app.ts` | Shared Hono environment types untuk request-scoped variables seperti `logger` dan `requestId`. |
 | `src/types/common.ts` | Shared TypeScript types seperti `ApiResponse`, `ApiSuccessResponse`, `ApiErrorResponse`, dan `PaginationMeta`. |
+| `src/utils/logger.ts` | Instance Pino logger utama dan helper `createChildLogger` agar logging modular dan reusable. |
 | `src/utils/response.ts` | Helper response API agar format sukses dan error konsisten. |
 | `drizzle.config.ts` | Konfigurasi Drizzle Kit untuk schema, migration output, dan koneksi database. |
 | `tsconfig.json` | Konfigurasi TypeScript strict untuk Bun + Hono, termasuk path alias `@/*`. |
@@ -117,8 +122,11 @@ Buat file `.env` berdasarkan `.env.example`.
 ```env
 NODE_ENV=development
 PORT=3000
+LOG_LEVEL=debug
 DATABASE_URL=postgresql://user:password@localhost:5432/dbname
 ```
+
+`LOG_LEVEL` bersifat opsional. Jika tidak diisi, default-nya `debug` untuk non-production dan `info` untuk production.
 
 ## Scripts
 

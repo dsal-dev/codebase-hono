@@ -4,6 +4,8 @@ import { HTTPException } from "hono/http-exception";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 import { env } from "@/config/env";
+import type { AppHonoEnv } from "@/types/app";
+import { logger } from "@/utils/logger";
 import { errorResponse } from "@/utils/response";
 
 export class AppError extends Error {
@@ -25,7 +27,7 @@ export class AppError extends Error {
   }
 }
 
-export const errorHandler: ErrorHandler = (err, c) => {
+export const errorHandler: ErrorHandler<AppHonoEnv> = (err, c) => {
   if (err instanceof AppError) {
     return c.json(errorResponse(err.message, err.code, err.errors), err.statusCode);
   }
@@ -36,7 +38,9 @@ export const errorHandler: ErrorHandler = (err, c) => {
     return c.json(errorResponse(err.message, "HTTP_EXCEPTION"), status);
   }
 
-  console.error(err);
+  const requestLogger = c.var.logger ?? logger;
+
+  requestLogger.error({ err }, "Unhandled error");
 
   const message = env.NODE_ENV === "production" ? "Internal server error" : err.message;
 

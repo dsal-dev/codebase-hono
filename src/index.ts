@@ -7,9 +7,11 @@ import { corsMiddleware } from "@/middlewares/cors";
 import { requestLogger } from "@/middlewares/logger";
 import { securityHeadersMiddleware } from "@/middlewares/security";
 import { registerRoutes } from "@/routes";
+import type { AppHonoEnv } from "@/types/app";
+import { logger } from "@/utils/logger";
 import { errorResponse } from "@/utils/response";
 
-const app = new Hono();
+const app = new Hono<AppHonoEnv>();
 
 app.use("*", requestLogger);
 app.use("*", corsMiddleware);
@@ -25,4 +27,4 @@ const server = Bun.serve({
   fetch: app.fetch,
 });
 
-console.info(`Server is running on port ${server.port}`);
+logger.info({ port: server.port }, "Server started");

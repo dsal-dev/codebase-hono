@@ -2,10 +2,11 @@
 import { Hono } from "hono";
 
 import { exampleRoutes } from "@/modules/example/example.routes";
+import type { AppHonoEnv } from "@/types/app";
 import { successResponse } from "@/utils/response";
 
-export const registerRoutes = (app: Hono): void => {
-  const api = new Hono();
+export const registerRoutes = (app: Hono<AppHonoEnv>): void => {
+  const api = new Hono<AppHonoEnv>();
 
   api.get("/health", (c) =>
     c.json(
@@ -21,5 +22,5 @@ export const registerRoutes = (app: Hono): void => {
 
   api.route("/examples", exampleRoutes);
 
-  app.route("/api/v1", api);
+  app.route("/api", api);
 };
