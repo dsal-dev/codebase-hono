@@ -1,4 +1,4 @@
-import type { UserRepository } from "@/modules/user/repository/user";
+import type { UserRepository } from "@/modules/user/repository";
 import { createListUsersUsecase, type ListUsersUsecase } from "./listUsers";
 import { createGetUserUsecase, type GetUserUsecase } from "./getUser";
 import { createCreateUserUsecase, type CreateUserUsecase } from "./createUser";

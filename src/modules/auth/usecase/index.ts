@@ -1,4 +1,4 @@
-import type { AuthRepository } from "@/modules/auth/repository/auth";
+import type { AuthRepository } from "@/modules/auth/repository";
 import { createLoginUsecase, type LoginUsecase } from "./login";
 import { createMeUsecase, type MeUsecase } from "./me";
 

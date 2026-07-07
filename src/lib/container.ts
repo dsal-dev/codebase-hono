@@ -1,6 +1,6 @@
 import { db } from "@/db";
-import { createAuthRepository } from "@/modules/auth/repository/auth";
-import { createUserRepository } from "@/modules/user/repository/user";
+import { createAuthRepository } from "@/modules/auth/repository";
+import { createUserRepository } from "@/modules/user/repository";
 import { createAuthUsecase } from "@/modules/auth/usecase";
 import { createUserUsecase } from "@/modules/user/usecase";
 import { createAuthHandlers } from "@/modules/auth/handler";
