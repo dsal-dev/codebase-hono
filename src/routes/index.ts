@@ -1,11 +1,11 @@
 import { Hono } from "hono";
 
-import { authRoutes } from "@/modules/auth/auth.routes";
-import { userRoutes } from "@/modules/user/user.routes";
+import { createContainer } from "@/lib/container";
 import type { AppHonoEnv } from "@/types/app";
 import { successResponse } from "@/utils/response";
 
 export const registerRoutes = (app: Hono<AppHonoEnv>): void => {
+  const container = createContainer();
   const api = new Hono<AppHonoEnv>();
 
   api.get("/health", (c) =>
@@ -20,8 +20,8 @@ export const registerRoutes = (app: Hono<AppHonoEnv>): void => {
     ),
   );
 
-  api.route("/auth", authRoutes);
-  api.route("/users", userRoutes);
+  api.route("/auth", container.authRoutes);
+  api.route("/users", container.userRoutes);
 
   app.route("/api/v1", api);
 };

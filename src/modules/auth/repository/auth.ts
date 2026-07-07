@@ -41,3 +41,21 @@ export const findUserById = async (
 
   return result[0];
 };
+
+export type AuthRepository = {
+  findUserByEmail: (email: string, logger: Logger) => Promise<UserRecord | undefined>;
+  findUserById: (id: string, logger: Logger) => Promise<UserRecord | undefined>;
+};
+
+export const createAuthRepository = (dbInstance: typeof db): AuthRepository => ({
+  findUserByEmail: async (email, logger) => {
+    logger.info({ email }, "Finding user by email");
+    const [result] = await dbInstance.select().from(users).where(eq(users.email, email)).limit(1);
+    return result;
+  },
+  findUserById: async (id, logger) => {
+    logger.info({ id }, "Finding user by id");
+    const [result] = await dbInstance.select().from(users).where(eq(users.id, id)).limit(1);
+    return result;
+  },
+});

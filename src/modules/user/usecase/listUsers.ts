@@ -1,6 +1,7 @@
 import type { Logger } from "pino";
 
 import { findAllUsers } from "@/modules/user/repository/user";
+import type { UserRepository } from "@/modules/user/repository/user";
 
 export type ListUsersInput = {
   page: number;
@@ -34,5 +35,29 @@ export const listUsers = async (
       updatedAt: u.updatedAt.toISOString(),
     })),
     total,
+  };
+};
+
+export type ListUsersUsecase = (
+  input: ListUsersInput,
+  logger: Logger,
+) => Promise<ListUsersOutput>;
+
+export const createListUsersUsecase = (
+  userRepo: UserRepository,
+): ListUsersUsecase => {
+  return async (input, logger) => {
+    logger.info({ page: input.page, limit: input.limit }, "Listing users");
+
+    const { data, total } = await userRepo.findAllUsers(input.page, input.limit, logger);
+
+    return {
+      data: data.map((u) => ({
+        ...u,
+        createdAt: u.createdAt.toISOString(),
+        updatedAt: u.updatedAt.toISOString(),
+      })),
+      total,
+    };
   };
 };
