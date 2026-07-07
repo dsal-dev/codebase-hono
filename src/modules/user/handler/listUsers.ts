@@ -4,6 +4,7 @@ import type { AppHonoEnv } from "@/types/app";
 import type { ListUsersUsecase } from "@/modules/user/usecase/listUsers";
 import { listUsersQuerySchema } from "@/modules/user/schema/userSchema";
 import { successResponse } from "@/utils/response";
+import { buildPaginationMeta } from "@/utils/pagination";
 
 export const createListUsersHandler = (listUsersUsecase: ListUsersUsecase) => {
   return async (c: Context<AppHonoEnv>) => {
@@ -11,16 +12,10 @@ export const createListUsersHandler = (listUsersUsecase: ListUsersUsecase) => {
     const query = listUsersQuerySchema.parse(c.req.query());
 
     const result = await listUsersUsecase(query, logger);
-
-    const totalPages = Math.ceil(result.total / query.limit);
+    const meta = buildPaginationMeta(query.page, query.limit, result.total);
 
     return c.json(
-      successResponse(result.data, "Users fetched successfully", {
-        page: query.page,
-        limit: query.limit,
-        total: result.total,
-        totalPages,
-      }),
+      successResponse(result.data, "Users fetched successfully", meta),
     );
   };
 };
