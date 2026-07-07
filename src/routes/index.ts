@@ -1,7 +1,7 @@
-// Route registry that mounts API modules behind a versioned prefix.
 import { Hono } from "hono";
 
 import { exampleRoutes } from "@/modules/example/example.routes";
+import { authRoutes } from "@/modules/auth/auth.routes";
 import type { AppHonoEnv } from "@/types/app";
 import { successResponse } from "@/utils/response";
 
@@ -21,6 +21,7 @@ export const registerRoutes = (app: Hono<AppHonoEnv>): void => {
   );
 
   api.route("/examples", exampleRoutes);
+  api.route("/auth", authRoutes);
 
   app.route("/api", api);
 };

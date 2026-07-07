@@ -15,6 +15,7 @@ type AppEnv = {
   PORT: number;
   DATABASE_URL: string;
   LOG_LEVEL: LogLevel;
+  JWT_SECRET: string;
 };
 
 const required = (key: keyof AppEnv): string => {
@@ -73,4 +74,5 @@ export const env: AppEnv = {
   LOG_LEVEL: parseLogLevel(
     process.env.LOG_LEVEL ?? (nodeEnv === "production" ? "info" : "debug"),
   ),
+  JWT_SECRET: required("JWT_SECRET"),
 };
