@@ -8,15 +8,22 @@ import type { AppHonoEnv } from "@/types/app";
 import { logger } from "@/utils/logger";
 import { errorResponse } from "@/utils/response";
 
+/**
+ * Custom application errors.
+ *
+ * @example
+ * throw new NotFoundError("User not found");
+ * throw new BadRequestError("Invalid input", { field: "email" });
+ */
 export class AppError extends Error {
   public readonly statusCode: ContentfulStatusCode;
   public readonly code: string;
   public readonly errors?: unknown;
 
   public constructor(
-    message: string,
     statusCode: ContentfulStatusCode,
     code: string,
+    message: string,
     errors?: unknown,
   ) {
     super(message);
@@ -27,9 +34,61 @@ export class AppError extends Error {
   }
 }
 
+export class BadRequestError extends AppError {
+  public constructor(message = "Bad request", errors?: unknown) {
+    super(400, "BAD_REQUEST", message, errors);
+    this.name = "BadRequestError";
+  }
+}
+
+export class UnauthorizedError extends AppError {
+  public constructor(message = "Unauthorized", errors?: unknown) {
+    super(401, "UNAUTHORIZED", message, errors);
+    this.name = "UnauthorizedError";
+  }
+}
+
+export class ForbiddenError extends AppError {
+  public constructor(message = "Forbidden", errors?: unknown) {
+    super(403, "FORBIDDEN", message, errors);
+    this.name = "ForbiddenError";
+  }
+}
+
+export class NotFoundError extends AppError {
+  public constructor(message = "Resource not found", errors?: unknown) {
+    super(404, "NOT_FOUND", message, errors);
+    this.name = "NotFoundError";
+  }
+}
+
+export class ConflictError extends AppError {
+  public constructor(message = "Conflict", errors?: unknown) {
+    super(409, "CONFLICT", message, errors);
+    this.name = "ConflictError";
+  }
+}
+
+export class UnprocessableEntityError extends AppError {
+  public constructor(message = "Unprocessable entity", errors?: unknown) {
+    super(422, "UNPROCESSABLE_ENTITY", message, errors);
+    this.name = "UnprocessableEntityError";
+  }
+}
+
+export class TooManyRequestsError extends AppError {
+  public constructor(message = "Too many requests", errors?: unknown) {
+    super(429, "TOO_MANY_REQUESTS", message, errors);
+    this.name = "TooManyRequestsError";
+  }
+}
+
 export const errorHandler: ErrorHandler<AppHonoEnv> = (err, c) => {
   if (err instanceof AppError) {
-    return c.json(errorResponse(err.message, err.code, err.errors), err.statusCode);
+    return c.json(
+      errorResponse(err.message, err.code, err.errors),
+      err.statusCode,
+    );
   }
 
   if (err instanceof HTTPException) {
@@ -42,7 +101,8 @@ export const errorHandler: ErrorHandler<AppHonoEnv> = (err, c) => {
 
   requestLogger.error({ err }, "Unhandled error");
 
-  const message = env.NODE_ENV === "production" ? "Internal server error" : err.message;
+  const message =
+    env.NODE_ENV === "production" ? "Internal server error" : err.message;
 
   return c.json(errorResponse(message, "INTERNAL_SERVER_ERROR"), 500);
 };
