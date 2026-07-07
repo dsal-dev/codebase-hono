@@ -16,6 +16,7 @@ export type LoginOutput = {
     id: string;
     email: string;
     name: string;
+    role: string;
   };
 };
 
@@ -41,7 +42,7 @@ export const login = async (
   }
 
   const accessToken = await Jwt.sign(
-    { sub: user.id, email: user.email },
+    { sub: user.id, email: user.email, role: user.role },
     env.JWT_SECRET,
   );
 
@@ -51,6 +52,7 @@ export const login = async (
       id: user.id,
       email: user.email,
       name: user.name,
+      role: user.role,
     },
   };
 };

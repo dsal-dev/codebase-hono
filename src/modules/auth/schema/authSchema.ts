@@ -11,6 +11,7 @@ export const loginResponseSchema = z.object({
     id: z.string(),
     email: z.string(),
     name: z.string(),
+    role: z.string(),
   }),
 });
 
@@ -18,4 +19,5 @@ export const userResponseSchema = z.object({
   id: z.string(),
   email: z.string(),
   name: z.string(),
+  role: z.string(),
 });

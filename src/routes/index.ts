@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 
-import { exampleRoutes } from "@/modules/example/example.routes";
 import { authRoutes } from "@/modules/auth/auth.routes";
+import { userRoutes } from "@/modules/user/user.routes";
 import type { AppHonoEnv } from "@/types/app";
 import { successResponse } from "@/utils/response";
 
@@ -20,8 +20,8 @@ export const registerRoutes = (app: Hono<AppHonoEnv>): void => {
     ),
   );
 
-  api.route("/examples", exampleRoutes);
   api.route("/auth", authRoutes);
+  api.route("/users", userRoutes);
 
-  app.route("/api", api);
+  app.route("/api/v1", api);
 };

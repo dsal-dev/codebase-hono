@@ -9,6 +9,7 @@ export type UserRecord = {
   email: string;
   name: string;
   passwordHash: string;
+  role: string;
 };
 
 export const findUserByEmail = async (

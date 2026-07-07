@@ -16,13 +16,17 @@ export const authMiddleware = createMiddleware<AppHonoEnv>(async (c, next) => {
 
   try {
     const payload = await Jwt.verify(token, env.JWT_SECRET, "HS256");
-    const { sub, email } = payload as { sub: string; email: string };
+    const { sub, email, role } = payload as {
+      sub: string;
+      email: string;
+      role: string;
+    };
 
-    if (!sub || !email) {
+    if (!sub || !email || !role) {
       throw new UnauthorizedError("Invalid token payload");
     }
 
-    c.set("user", { sub, email });
+    c.set("user", { sub, email, role });
     await next();
   } catch {
     throw new UnauthorizedError("Invalid or expired token");

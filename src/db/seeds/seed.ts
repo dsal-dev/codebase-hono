@@ -6,11 +6,13 @@ const seedUsers = [
     email: "admin@example.com",
     name: "Admin User",
     password: "password123",
+    role: "admin",
   },
   {
     email: "user@example.com",
     name: "Regular User",
     password: "password123",
+    role: "user",
   },
 ];
 
@@ -25,6 +27,7 @@ async function seed() {
         email: user.email,
         name: user.name,
         passwordHash,
+        role: user.role,
       })
       .onConflictDoNothing();
 

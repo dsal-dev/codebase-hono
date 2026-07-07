@@ -83,6 +83,13 @@ export class TooManyRequestsError extends AppError {
   }
 }
 
+export class InternalServerError extends AppError {
+  public constructor(message = "Internal server error", errors?: unknown) {
+    super(500, "INTERNAL_SERVER_ERROR", message, errors);
+    this.name = "InternalServerError";
+  }
+}
+
 export const errorHandler: ErrorHandler<AppHonoEnv> = (err, c) => {
   if (err instanceof AppError) {
     return c.json(

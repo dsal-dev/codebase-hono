@@ -7,6 +7,7 @@ export type MeOutput = {
   id: string;
   email: string;
   name: string;
+  role: string;
 };
 
 export const me = async (userId: string, logger: Logger): Promise<MeOutput> => {
@@ -22,5 +23,6 @@ export const me = async (userId: string, logger: Logger): Promise<MeOutput> => {
     id: user.id,
     email: user.email,
     name: user.name,
+    role: user.role,
   };
 };
