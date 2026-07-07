@@ -4,11 +4,10 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "ignoreDeprecations": "6.0",
     "moduleResolution": "Bundler",
     "moduleDetection": "force",
     "lib": ["ESNext"],
-    "types": ["bun-types"],
+    "types": ["bun"],
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
@@ -18,7 +17,6 @@
     "allowImportingTsExtensions": false,
     "noEmit": true,
     "skipLibCheck": true,
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }

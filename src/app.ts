@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import { errorHandler } from "@/middlewares/error-handler";
 import { corsMiddleware } from "@/middlewares/cors";
 import { requestLogger } from "@/middlewares/logger";
+import { rateLimitMiddleware } from "@/middlewares/rate-limiter";
 import { securityHeadersMiddleware } from "@/middlewares/security";
 import { registerRoutes } from "@/routes";
 import type { AppHonoEnv } from "@/types/app";
@@ -11,6 +12,7 @@ import { errorResponse } from "@/utils/response";
 const app = new Hono<AppHonoEnv>();
 
 app.use("*", requestLogger);
+app.use("*", rateLimitMiddleware);
 app.use("*", corsMiddleware);
 app.use("*", securityHeadersMiddleware);
 
