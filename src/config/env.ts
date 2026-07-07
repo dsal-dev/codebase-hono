@@ -28,7 +28,7 @@ const required = (key: keyof AppEnv): string => {
   return value;
 };
 
-const parseNodeEnv = (value: string): NodeEnv => {
+export const parseNodeEnv = (value: string): NodeEnv => {
   if (value === "development" || value === "test" || value === "production") {
     return value;
   }
@@ -36,7 +36,7 @@ const parseNodeEnv = (value: string): NodeEnv => {
   throw new Error("NODE_ENV must be one of: development, test, production.");
 };
 
-const parsePort = (value: string): number => {
+export const parsePort = (value: string): number => {
   const port = Number(value);
 
   if (!Number.isInteger(port) || port <= 0 || port > 65_535) {
@@ -46,7 +46,7 @@ const parsePort = (value: string): number => {
   return port;
 };
 
-const parseLogLevel = (value: string): LogLevel => {
+export const parseLogLevel = (value: string): LogLevel => {
   if (
     value === "fatal" ||
     value === "error" ||
