@@ -1,9 +1,9 @@
 import { Jwt } from "hono/utils/jwt";
-import type { Logger } from "pino";
 
 import { env } from "@/config/env";
 import type { AuthRepository } from "@/modules/auth/repository";
 import { UnauthorizedError } from "@/middlewares/error-handler";
+import { getLogger } from "@/lib/requestContext";
 
 export type LoginInput = {
   email: string;
@@ -22,16 +22,16 @@ export type LoginOutput = {
 
 export type LoginUsecase = (
   input: LoginInput,
-  logger: Logger,
 ) => Promise<LoginOutput>;
 
 export const createLoginUsecase = (
   authRepo: AuthRepository,
 ): LoginUsecase => {
-  return async (input, logger) => {
+  return async (input) => {
+    const logger = getLogger();
     logger.info({ email: input.email }, "Login attempt");
 
-    const user = await authRepo.findUserByEmail(input.email, logger);
+    const user = await authRepo.findUserByEmail(input.email);
 
     if (!user) {
       throw new UnauthorizedError("Invalid email or password");

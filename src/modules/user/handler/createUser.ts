@@ -8,15 +8,13 @@ import { UnprocessableEntityError } from "@/middlewares/error-handler";
 
 export const createCreateUserHandler = (createUserUsecase: CreateUserUsecase) => {
   return async (c: Context<AppHonoEnv>) => {
-    const logger = c.var.logger;
-
     const parsed = createUserSchema.safeParse(await c.req.json());
 
     if (!parsed.success) {
       throw new UnprocessableEntityError("Invalid input", parsed.error.issues);
     }
 
-    const result = await createUserUsecase(parsed.data, logger);
+    const result = await createUserUsecase(parsed.data);
 
     return c.json(successResponse(result, "User created successfully"));
   };

@@ -1,9 +1,9 @@
 import { eq } from "drizzle-orm";
-import type { Logger } from "pino";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 
 import { users } from "@/db/schema";
 import type * as schema from "@/db/schema";
+import { getLogger } from "@/lib/requestContext";
 
 export type UserRecord = {
   id: string;
@@ -14,12 +14,14 @@ export type UserRecord = {
 };
 
 export const createAuthQueries = (dbInstance: PostgresJsDatabase<typeof schema>) => ({
-  findUserByEmail: async (email: string, logger: Logger): Promise<UserRecord | undefined> => {
+  findUserByEmail: async (email: string): Promise<UserRecord | undefined> => {
+    const logger = getLogger();
     logger.info({ email }, "Finding user by email");
     const [result] = await dbInstance.select().from(users).where(eq(users.email, email)).limit(1);
     return result;
   },
-  findUserById: async (id: string, logger: Logger): Promise<UserRecord | undefined> => {
+  findUserById: async (id: string): Promise<UserRecord | undefined> => {
+    const logger = getLogger();
     logger.info({ id }, "Finding user by id");
     const [result] = await dbInstance.select().from(users).where(eq(users.id, id)).limit(1);
     return result;

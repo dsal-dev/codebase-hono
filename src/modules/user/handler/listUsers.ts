@@ -8,10 +8,9 @@ import { buildPaginationMeta } from "@/utils/pagination";
 
 export const createListUsersHandler = (listUsersUsecase: ListUsersUsecase) => {
   return async (c: Context<AppHonoEnv>) => {
-    const logger = c.var.logger;
     const query = listUsersQuerySchema.parse(c.req.query());
 
-    const result = await listUsersUsecase(query, logger);
+    const result = await listUsersUsecase(query);
     const meta = buildPaginationMeta(query.page, query.limit, result.total);
 
     return c.json(

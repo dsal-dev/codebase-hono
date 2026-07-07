@@ -73,7 +73,7 @@ describe("meHandler", () => {
 
     await handler(c);
 
-    expect(mockUsecase).toHaveBeenCalledWith("1", expect.anything());
+    expect(mockUsecase).toHaveBeenCalledWith("1");
   });
 });
 

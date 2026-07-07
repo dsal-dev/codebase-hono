@@ -1,11 +1,10 @@
-import type { Logger } from "pino";
-
 import type { UserRepository } from "@/modules/user/repository";
 import {
   NotFoundError,
   ConflictError,
   InternalServerError,
 } from "@/middlewares/error-handler";
+import { getLogger } from "@/lib/requestContext";
 
 export type UpdateUserInput = {
   email?: string | undefined;
@@ -26,23 +25,23 @@ export type UpdateUserOutput = {
 export type UpdateUserUsecase = (
   id: string,
   input: UpdateUserInput,
-  logger: Logger,
 ) => Promise<UpdateUserOutput>;
 
 export const createUpdateUserUsecase = (
   userRepo: UserRepository,
 ): UpdateUserUsecase => {
-  return async (id, input, logger) => {
+  return async (id, input) => {
+    const logger = getLogger();
     logger.info({ id }, "Updating user");
 
-    const existing = await userRepo.findUserById(id, logger);
+    const existing = await userRepo.findUserById(id);
 
     if (!existing) {
       throw new NotFoundError("User not found");
     }
 
     if (input.email && input.email !== existing.email) {
-      const emailExists = await userRepo.findUserByEmail(input.email, logger);
+      const emailExists = await userRepo.findUserByEmail(input.email);
 
       if (emailExists) {
         throw new ConflictError("Email already exists");
@@ -58,7 +57,7 @@ export const createUpdateUserUsecase = (
       updateData.passwordHash = await Bun.password.hash(input.password);
     }
 
-    const user = await userRepo.updateUserById(id, updateData, logger);
+    const user = await userRepo.updateUserById(id, updateData);
 
     if (!user) {
       throw new InternalServerError("Failed to update user");

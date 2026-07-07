@@ -4,8 +4,6 @@ import { createMeUsecase } from "@/modules/auth/usecase/me";
 import type { AuthRepository } from "@/modules/auth/repository";
 import { UnauthorizedError, NotFoundError } from "@/middlewares/error-handler";
 
-const mockLogger = { info: vi.fn(), error: vi.fn(), warn: vi.fn() } as any;
-
 const createMockRepo = (
   overrides: Partial<AuthRepository> = {},
 ): AuthRepository => ({
@@ -32,13 +30,12 @@ describe("loginUsecase", () => {
     const usecase = createLoginUsecase(repo);
     const result = await usecase(
       { email: "user@example.com", password: "secret123" },
-      mockLogger,
     );
 
     expect(result.accessToken).toBeTypeOf("string");
     expect(result.user.id).toBe("1");
     expect(result.user.email).toBe("user@example.com");
-    expect(repo.findUserByEmail).toHaveBeenCalledWith("user@example.com", mockLogger);
+    expect(repo.findUserByEmail).toHaveBeenCalledWith("user@example.com");
   });
 
   it("should throw UnauthorizedError when user not found", async () => {
@@ -49,7 +46,7 @@ describe("loginUsecase", () => {
     const usecase = createLoginUsecase(repo);
 
     await expect(
-      usecase({ email: "unknown@example.com", password: "secret123" }, mockLogger),
+      usecase({ email: "unknown@example.com", password: "secret123" }),
     ).rejects.toThrow(UnauthorizedError);
   });
 
@@ -70,7 +67,7 @@ describe("loginUsecase", () => {
     const usecase = createLoginUsecase(repo);
 
     await expect(
-      usecase({ email: "user@example.com", password: "wrongpassword" }, mockLogger),
+      usecase({ email: "user@example.com", password: "wrongpassword" }),
     ).rejects.toThrow(UnauthorizedError);
   });
 });
@@ -88,7 +85,7 @@ describe("meUsecase", () => {
     });
 
     const usecase = createMeUsecase(repo);
-    const result = await usecase("1", mockLogger);
+    const result = await usecase("1");
 
     expect(result.id).toBe("1");
     expect(result.email).toBe("user@example.com");
@@ -104,6 +101,6 @@ describe("meUsecase", () => {
 
     const usecase = createMeUsecase(repo);
 
-    await expect(usecase("nonexistent", mockLogger)).rejects.toThrow(NotFoundError);
+    await expect(usecase("nonexistent")).rejects.toThrow(NotFoundError);
   });
 });

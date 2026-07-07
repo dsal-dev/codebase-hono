@@ -11,8 +11,6 @@ import {
   InternalServerError,
 } from "@/middlewares/error-handler";
 
-const mockLogger = { info: vi.fn(), error: vi.fn(), warn: vi.fn() } as any;
-
 const createMockRepo = (
   overrides: Partial<UserRepository> = {},
 ): UserRepository => ({
@@ -42,22 +40,16 @@ describe("createUserUsecase", () => {
     });
 
     const usecase = createCreateUserUsecase(repo);
-    const result = await usecase(
-      {
-        email: "user@example.com",
-        name: "John",
-        password: "secret123",
-        role: "user",
-      },
-      mockLogger,
-    );
+    const result = await usecase({
+      email: "user@example.com",
+      name: "John",
+      password: "secret123",
+      role: "user",
+    });
 
     expect(result.id).toBe("1");
     expect(result.email).toBe("user@example.com");
-    expect(repo.findUserByEmail).toHaveBeenCalledWith(
-      "user@example.com",
-      mockLogger,
-    );
+    expect(repo.findUserByEmail).toHaveBeenCalledWith("user@example.com");
     expect(repo.insertUser).toHaveBeenCalledOnce();
   });
 
@@ -69,15 +61,12 @@ describe("createUserUsecase", () => {
     const usecase = createCreateUserUsecase(repo);
 
     await expect(
-      usecase(
-        {
-          email: "existing@example.com",
-          name: "John",
-          password: "secret123",
-          role: "user",
-        },
-        mockLogger,
-      ),
+      usecase({
+        email: "existing@example.com",
+        name: "John",
+        password: "secret123",
+        role: "user",
+      }),
     ).rejects.toThrow(ConflictError);
   });
 
@@ -90,15 +79,12 @@ describe("createUserUsecase", () => {
     const usecase = createCreateUserUsecase(repo);
 
     await expect(
-      usecase(
-        {
-          email: "user@example.com",
-          name: "John",
-          password: "secret123",
-          role: "user",
-        },
-        mockLogger,
-      ),
+      usecase({
+        email: "user@example.com",
+        name: "John",
+        password: "secret123",
+        role: "user",
+      }),
     ).rejects.toThrow(InternalServerError);
   });
 });
@@ -117,7 +103,7 @@ describe("getUserUsecase", () => {
     });
 
     const usecase = createGetUserUsecase(repo);
-    const result = await usecase("1", mockLogger);
+    const result = await usecase("1");
 
     expect(result.id).toBe("1");
     expect(result.email).toBe("user@example.com");
@@ -130,9 +116,7 @@ describe("getUserUsecase", () => {
 
     const usecase = createGetUserUsecase(repo);
 
-    await expect(usecase("nonexistent", mockLogger)).rejects.toThrow(
-      NotFoundError,
-    );
+    await expect(usecase("nonexistent")).rejects.toThrow(NotFoundError);
   });
 });
 
@@ -155,7 +139,7 @@ describe("listUsersUsecase", () => {
     });
 
     const usecase = createListUsersUsecase(repo);
-    const result = await usecase({ page: 1, limit: 10 }, mockLogger);
+    const result = await usecase({ page: 1, limit: 10 });
 
     expect(result.data).toHaveLength(1);
     expect(result.total).toBe(1);
@@ -187,10 +171,10 @@ describe("updateUserUsecase", () => {
     });
 
     const usecase = createUpdateUserUsecase(repo);
-    const result = await usecase("1", { email: "new@example.com" }, mockLogger);
+    const result = await usecase("1", { email: "new@example.com" });
 
     expect(result.email).toBe("new@example.com");
-    expect(repo.findUserById).toHaveBeenCalledWith("1", mockLogger);
+    expect(repo.findUserById).toHaveBeenCalledWith("1");
     expect(repo.updateUserById).toHaveBeenCalledOnce();
   });
 
@@ -202,7 +186,7 @@ describe("updateUserUsecase", () => {
     const usecase = createUpdateUserUsecase(repo);
 
     await expect(
-      usecase("nonexistent", { name: "New" }, mockLogger),
+      usecase("nonexistent", { name: "New" }),
     ).rejects.toThrow(NotFoundError);
   });
 
@@ -224,7 +208,7 @@ describe("updateUserUsecase", () => {
     const usecase = createUpdateUserUsecase(repo);
 
     await expect(
-      usecase("1", { email: "taken@example.com" }, mockLogger),
+      usecase("1", { email: "taken@example.com" }),
     ).rejects.toThrow(ConflictError);
   });
 
@@ -244,7 +228,7 @@ describe("updateUserUsecase", () => {
 
     const usecase = createUpdateUserUsecase(repo);
 
-    await expect(usecase("1", { name: "New" }, mockLogger)).rejects.toThrow(
+    await expect(usecase("1", { name: "New" })).rejects.toThrow(
       InternalServerError,
     );
   });
@@ -265,10 +249,10 @@ describe("deleteUserUsecase", () => {
     });
 
     const usecase = createDeleteUserUsecase(repo);
-    await usecase("1", mockLogger);
+    await usecase("1");
 
-    expect(repo.findUserById).toHaveBeenCalledWith("1", mockLogger);
-    expect(repo.deleteUserById).toHaveBeenCalledWith("1", mockLogger);
+    expect(repo.findUserById).toHaveBeenCalledWith("1");
+    expect(repo.deleteUserById).toHaveBeenCalledWith("1");
   });
 
   it("should throw NotFoundError when user not found", async () => {
@@ -278,8 +262,6 @@ describe("deleteUserUsecase", () => {
 
     const usecase = createDeleteUserUsecase(repo);
 
-    await expect(usecase("nonexistent", mockLogger)).rejects.toThrow(
-      NotFoundError,
-    );
+    await expect(usecase("nonexistent")).rejects.toThrow(NotFoundError);
   });
 });

@@ -1,7 +1,6 @@
-import type { Logger } from "pino";
-
 import type { AuthRepository } from "@/modules/auth/repository";
 import { NotFoundError } from "@/middlewares/error-handler";
+import { getLogger } from "@/lib/requestContext";
 
 export type MeOutput = {
   id: string;
@@ -10,13 +9,14 @@ export type MeOutput = {
   role: string;
 };
 
-export type MeUsecase = (userId: string, logger: Logger) => Promise<MeOutput>;
+export type MeUsecase = (userId: string) => Promise<MeOutput>;
 
 export const createMeUsecase = (authRepo: AuthRepository): MeUsecase => {
-  return async (userId, logger) => {
+  return async (userId) => {
+    const logger = getLogger();
     logger.info({ userId }, "Fetching current user");
 
-    const user = await authRepo.findUserById(userId, logger);
+    const user = await authRepo.findUserById(userId);
 
     if (!user) {
       throw new NotFoundError("User not found");

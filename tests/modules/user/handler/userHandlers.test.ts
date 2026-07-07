@@ -60,7 +60,7 @@ describe("getUserHandler", () => {
 
     await handler(c);
 
-    expect(mockUsecase).toHaveBeenCalledWith("1", expect.anything());
+    expect(mockUsecase).toHaveBeenCalledWith("1");
   });
 
   it("should throw when no id provided", async () => {
@@ -83,7 +83,6 @@ describe("listUsersHandler", () => {
 
     expect(mockUsecase).toHaveBeenCalledWith(
       expect.objectContaining({ page: 1, limit: 10 }),
-      expect.anything(),
     );
   });
 });
@@ -99,7 +98,7 @@ describe("updateUserHandler", () => {
 
     await handler(c);
 
-    expect(mockUsecase).toHaveBeenCalledWith("1", { name: "Updated" }, expect.anything());
+    expect(mockUsecase).toHaveBeenCalledWith("1", { name: "Updated" });
   });
 
   it("should throw when no id provided", async () => {
@@ -119,7 +118,7 @@ describe("deleteUserHandler", () => {
 
     await handler(c);
 
-    expect(mockUsecase).toHaveBeenCalledWith("1", expect.anything());
+    expect(mockUsecase).toHaveBeenCalledWith("1");
   });
 
   it("should throw when no id provided", async () => {

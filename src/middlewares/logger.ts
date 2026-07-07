@@ -3,6 +3,7 @@ import { createMiddleware } from "hono/factory";
 
 import type { AppHonoEnv } from "@/types/app";
 import { createChildLogger } from "@/utils/logger";
+import { requestContext } from "@/lib/requestContext";
 
 const getRequestLogLevel = (status: number): "info" | "warn" | "error" => {
   if (status >= 500) {
@@ -27,7 +28,7 @@ export const requestLogger = createMiddleware<AppHonoEnv>(async (c, next) => {
   c.header("x-request-id", requestId);
 
   try {
-    await next();
+    await requestContext.run({ logger: requestScopedLogger, requestId }, next);
     status = c.res.status;
   } finally {
     const durationMs = Math.round((performance.now() - startedAt) * 100) / 100;

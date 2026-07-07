@@ -7,14 +7,13 @@ import { BadRequestError } from "@/middlewares/error-handler";
 
 export const createGetUserHandler = (getUserUsecase: GetUserUsecase) => {
   return async (c: Context<AppHonoEnv>) => {
-    const logger = c.var.logger;
     const id = c.req.param("id");
 
     if (!id) {
       throw new BadRequestError("User ID is required");
     }
 
-    const result = await getUserUsecase(id, logger);
+    const result = await getUserUsecase(id);
 
     return c.json(successResponse(result, "User fetched successfully"));
   };

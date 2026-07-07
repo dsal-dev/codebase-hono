@@ -5,7 +5,7 @@ import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 import { env } from "@/config/env";
 import type { AppHonoEnv } from "@/types/app";
-import { logger } from "@/utils/logger";
+import { getLogger } from "@/lib/requestContext";
 import { errorResponse } from "@/utils/response";
 
 /**
@@ -104,7 +104,7 @@ export const errorHandler: ErrorHandler<AppHonoEnv> = (err, c) => {
     return c.json(errorResponse(err.message, "HTTP_EXCEPTION"), status);
   }
 
-  const requestLogger = c.var.logger ?? logger;
+  const requestLogger = getLogger();
 
   requestLogger.error({ err }, "Unhandled error");
 

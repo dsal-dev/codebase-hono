@@ -1,7 +1,6 @@
-import type { Logger } from "pino";
-
 import type { UserRepository } from "@/modules/user/repository";
 import { ConflictError, InternalServerError } from "@/middlewares/error-handler";
+import { getLogger } from "@/lib/requestContext";
 
 export type CreateUserInput = {
   email: string;
@@ -21,16 +20,16 @@ export type CreateUserOutput = {
 
 export type CreateUserUsecase = (
   input: CreateUserInput,
-  logger: Logger,
 ) => Promise<CreateUserOutput>;
 
 export const createCreateUserUsecase = (
   userRepo: UserRepository,
 ): CreateUserUsecase => {
-  return async (input, logger) => {
+  return async (input) => {
+    const logger = getLogger();
     logger.info({ email: input.email }, "Creating user");
 
-    const existing = await userRepo.findUserByEmail(input.email, logger);
+    const existing = await userRepo.findUserByEmail(input.email);
 
     if (existing) {
       throw new ConflictError("Email already exists");
@@ -38,15 +37,12 @@ export const createCreateUserUsecase = (
 
     const passwordHash = await Bun.password.hash(input.password);
 
-    const user = await userRepo.insertUser(
-      {
-        email: input.email,
-        name: input.name,
-        passwordHash,
-        role: input.role,
-      },
-      logger,
-    );
+    const user = await userRepo.insertUser({
+      email: input.email,
+      name: input.name,
+      passwordHash,
+      role: input.role,
+    });
 
     if (!user) {
       throw new InternalServerError("Failed to create user");

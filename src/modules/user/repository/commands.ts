@@ -1,10 +1,10 @@
 import { eq } from "drizzle-orm";
-import type { Logger } from "pino";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 
 import { users } from "@/db/schema";
 import type * as schema from "@/db/schema";
 import type { UserRow } from "./queries";
+import { getLogger } from "@/lib/requestContext";
 
 export const createUserCommands = (dbInstance: PostgresJsDatabase<typeof schema>) => ({
   insertUser: async (
@@ -14,8 +14,8 @@ export const createUserCommands = (dbInstance: PostgresJsDatabase<typeof schema>
       passwordHash: string;
       role: string;
     },
-    logger: Logger,
   ): Promise<UserRow | undefined> => {
+    const logger = getLogger();
     logger.info({ email: input.email }, "Creating user");
 
     const [result] = await dbInstance
@@ -46,8 +46,8 @@ export const createUserCommands = (dbInstance: PostgresJsDatabase<typeof schema>
       passwordHash: string;
       role: string;
     }>,
-    logger: Logger,
   ): Promise<UserRow | undefined> => {
+    const logger = getLogger();
     logger.info({ id }, "Updating user");
 
     const [result] = await dbInstance
@@ -66,7 +66,8 @@ export const createUserCommands = (dbInstance: PostgresJsDatabase<typeof schema>
     return result;
   },
 
-  deleteUserById: async (id: string, logger: Logger): Promise<void> => {
+  deleteUserById: async (id: string): Promise<void> => {
+    const logger = getLogger();
     logger.info({ id }, "Deleting user");
 
     await dbInstance.delete(users).where(eq(users.id, id));

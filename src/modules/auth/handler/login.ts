@@ -8,15 +8,13 @@ import { UnprocessableEntityError } from "@/middlewares/error-handler";
 
 export const createLoginHandler = (loginUsecase: LoginUsecase) => {
   return async (c: Context<AppHonoEnv>) => {
-    const logger = c.var.logger;
-
     const parsed = loginSchema.safeParse(await c.req.json());
 
     if (!parsed.success) {
       throw new UnprocessableEntityError("Invalid input", parsed.error.issues);
     }
 
-    const result = await loginUsecase(parsed.data, logger);
+    const result = await loginUsecase(parsed.data);
 
     return c.json(successResponse(result, "Login successful"));
   };

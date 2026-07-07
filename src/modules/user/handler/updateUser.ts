@@ -11,7 +11,6 @@ import {
 
 export const createUpdateUserHandler = (updateUserUsecase: UpdateUserUsecase) => {
   return async (c: Context<AppHonoEnv>) => {
-    const logger = c.var.logger;
     const id = c.req.param("id");
 
     if (!id) {
@@ -24,7 +23,7 @@ export const createUpdateUserHandler = (updateUserUsecase: UpdateUserUsecase) =>
       throw new UnprocessableEntityError("Invalid input", parsed.error.issues);
     }
 
-    const result = await updateUserUsecase(id, parsed.data, logger);
+    const result = await updateUserUsecase(id, parsed.data);
 
     return c.json(successResponse(result, "User updated successfully"));
   };

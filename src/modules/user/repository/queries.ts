@@ -1,9 +1,9 @@
 import { eq, count, asc } from "drizzle-orm";
-import type { Logger } from "pino";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 
 import { users } from "@/db/schema";
 import type * as schema from "@/db/schema";
+import { getLogger } from "@/lib/requestContext";
 
 export type UserRow = {
   id: string;
@@ -18,8 +18,8 @@ export const createUserQueries = (dbInstance: PostgresJsDatabase<typeof schema>)
   findAllUsers: async (
     page: number,
     limit: number,
-    logger: Logger,
   ): Promise<{ data: UserRow[]; total: number }> => {
+    const logger = getLogger();
     logger.info({ page, limit }, "Finding all users");
 
     const offset = (page - 1) * limit;
@@ -44,7 +44,8 @@ export const createUserQueries = (dbInstance: PostgresJsDatabase<typeof schema>)
     return { data, total };
   },
 
-  findUserById: async (id: string, logger: Logger): Promise<UserRow | undefined> => {
+  findUserById: async (id: string): Promise<UserRow | undefined> => {
+    const logger = getLogger();
     logger.info({ id }, "Finding user by id");
 
     const [result] = await dbInstance
@@ -63,7 +64,8 @@ export const createUserQueries = (dbInstance: PostgresJsDatabase<typeof schema>)
     return result;
   },
 
-  findUserByEmail: async (email: string, logger: Logger): Promise<UserRow | undefined> => {
+  findUserByEmail: async (email: string): Promise<UserRow | undefined> => {
+    const logger = getLogger();
     logger.info({ email }, "Finding user by email");
 
     const [result] = await dbInstance

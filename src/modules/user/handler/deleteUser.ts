@@ -7,14 +7,13 @@ import { BadRequestError } from "@/middlewares/error-handler";
 
 export const createDeleteUserHandler = (deleteUserUsecase: DeleteUserUsecase) => {
   return async (c: Context<AppHonoEnv>) => {
-    const logger = c.var.logger;
     const id = c.req.param("id");
 
     if (!id) {
       throw new BadRequestError("User ID is required");
     }
 
-    await deleteUserUsecase(id, logger);
+    await deleteUserUsecase(id);
 
     return c.json(successResponse(null, "User deleted successfully"));
   };

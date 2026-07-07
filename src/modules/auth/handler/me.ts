@@ -6,10 +6,9 @@ import { successResponse } from "@/utils/response";
 
 export const createMeHandler = (meUsecase: MeUsecase) => {
   return async (c: Context<AppHonoEnv>) => {
-    const logger = c.var.logger;
     const user = c.var.user;
 
-    const result = await meUsecase(user.sub, logger);
+    const result = await meUsecase(user.sub);
 
     return c.json(successResponse(result, "User fetched successfully"));
   };

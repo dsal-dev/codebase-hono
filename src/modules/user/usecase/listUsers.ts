@@ -1,6 +1,5 @@
-import type { Logger } from "pino";
-
 import type { UserRepository } from "@/modules/user/repository";
+import { getLogger } from "@/lib/requestContext";
 
 export type ListUsersInput = {
   page: number;
@@ -21,16 +20,16 @@ export type ListUsersOutput = {
 
 export type ListUsersUsecase = (
   input: ListUsersInput,
-  logger: Logger,
 ) => Promise<ListUsersOutput>;
 
 export const createListUsersUsecase = (
   userRepo: UserRepository,
 ): ListUsersUsecase => {
-  return async (input, logger) => {
+  return async (input) => {
+    const logger = getLogger();
     logger.info({ page: input.page, limit: input.limit }, "Listing users");
 
-    const { data, total } = await userRepo.findAllUsers(input.page, input.limit, logger);
+    const { data, total } = await userRepo.findAllUsers(input.page, input.limit);
 
     return {
       data: data.map((u) => ({
