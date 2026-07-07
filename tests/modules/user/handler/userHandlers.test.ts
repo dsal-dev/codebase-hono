@@ -1,5 +1,4 @@
 import { describe, it, expect, vi } from "vitest";
-import { Hono } from "hono";
 import type { Context } from "hono";
 import { createCreateUserHandler } from "@/modules/user/handler/createUser";
 import { createGetUserHandler } from "@/modules/user/handler/getUser";
@@ -9,9 +8,6 @@ import { createDeleteUserHandler } from "@/modules/user/handler/deleteUser";
 import type { AppHonoEnv } from "@/types/app";
 
 const createTestContext = (overrides: Record<string, any> = {}): Context<AppHonoEnv> => {
-  const app = new Hono<AppHonoEnv>();
-  const req = new Request("http://localhost", overrides.reqInit || {});
-  const c = app.request(req) as any;
   const mockC = {
     req: {
       param: vi.fn((key: string) => overrides.params?.[key]),

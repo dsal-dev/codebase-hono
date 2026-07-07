@@ -1,15 +1,21 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { createCreateUserUsecase } from "@/modules/user/usecase/createUser";
 import { createGetUserUsecase } from "@/modules/user/usecase/getUser";
 import { createListUsersUsecase } from "@/modules/user/usecase/listUsers";
 import { createUpdateUserUsecase } from "@/modules/user/usecase/updateUser";
 import { createDeleteUserUsecase } from "@/modules/user/usecase/deleteUser";
 import type { UserRepository } from "@/modules/user/repository";
-import { ConflictError, NotFoundError, InternalServerError } from "@/middlewares/error-handler";
+import {
+  ConflictError,
+  NotFoundError,
+  InternalServerError,
+} from "@/middlewares/error-handler";
 
 const mockLogger = { info: vi.fn(), error: vi.fn(), warn: vi.fn() } as any;
 
-const createMockRepo = (overrides: Partial<UserRepository> = {}): UserRepository => ({
+const createMockRepo = (
+  overrides: Partial<UserRepository> = {},
+): UserRepository => ({
   findAllUsers: vi.fn(),
   findUserById: vi.fn(),
   findUserByEmail: vi.fn(),
@@ -37,13 +43,21 @@ describe("createUserUsecase", () => {
 
     const usecase = createCreateUserUsecase(repo);
     const result = await usecase(
-      { email: "user@example.com", name: "John", password: "secret123", role: "user" },
+      {
+        email: "user@example.com",
+        name: "John",
+        password: "secret123",
+        role: "user",
+      },
       mockLogger,
     );
 
     expect(result.id).toBe("1");
     expect(result.email).toBe("user@example.com");
-    expect(repo.findUserByEmail).toHaveBeenCalledWith("user@example.com", mockLogger);
+    expect(repo.findUserByEmail).toHaveBeenCalledWith(
+      "user@example.com",
+      mockLogger,
+    );
     expect(repo.insertUser).toHaveBeenCalledOnce();
   });
 
@@ -56,7 +70,12 @@ describe("createUserUsecase", () => {
 
     await expect(
       usecase(
-        { email: "existing@example.com", name: "John", password: "secret123", role: "user" },
+        {
+          email: "existing@example.com",
+          name: "John",
+          password: "secret123",
+          role: "user",
+        },
         mockLogger,
       ),
     ).rejects.toThrow(ConflictError);
@@ -72,7 +91,12 @@ describe("createUserUsecase", () => {
 
     await expect(
       usecase(
-        { email: "user@example.com", name: "John", password: "secret123", role: "user" },
+        {
+          email: "user@example.com",
+          name: "John",
+          password: "secret123",
+          role: "user",
+        },
         mockLogger,
       ),
     ).rejects.toThrow(InternalServerError);
@@ -106,7 +130,9 @@ describe("getUserUsecase", () => {
 
     const usecase = createGetUserUsecase(repo);
 
-    await expect(usecase("nonexistent", mockLogger)).rejects.toThrow(NotFoundError);
+    await expect(usecase("nonexistent", mockLogger)).rejects.toThrow(
+      NotFoundError,
+    );
   });
 });
 
@@ -190,7 +216,9 @@ describe("updateUserUsecase", () => {
         createdAt: date,
         updatedAt: date,
       }),
-      findUserByEmail: vi.fn().mockResolvedValue({ id: "2", email: "taken@example.com" }),
+      findUserByEmail: vi
+        .fn()
+        .mockResolvedValue({ id: "2", email: "taken@example.com" }),
     });
 
     const usecase = createUpdateUserUsecase(repo);
@@ -216,9 +244,9 @@ describe("updateUserUsecase", () => {
 
     const usecase = createUpdateUserUsecase(repo);
 
-    await expect(
-      usecase("1", { name: "New" }, mockLogger),
-    ).rejects.toThrow(InternalServerError);
+    await expect(usecase("1", { name: "New" }, mockLogger)).rejects.toThrow(
+      InternalServerError,
+    );
   });
 });
 
@@ -250,6 +278,8 @@ describe("deleteUserUsecase", () => {
 
     const usecase = createDeleteUserUsecase(repo);
 
-    await expect(usecase("nonexistent", mockLogger)).rejects.toThrow(NotFoundError);
+    await expect(usecase("nonexistent", mockLogger)).rejects.toThrow(
+      NotFoundError,
+    );
   });
 });
