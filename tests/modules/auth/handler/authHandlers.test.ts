@@ -1,9 +1,9 @@
-import { createLoginHandler } from "@/modules/auth/handler/login";
-import { createLogoutHandler } from "@/modules/auth/handler/logout";
-import { createMeHandler } from "@/modules/auth/handler/me";
-import type { AppHonoEnv } from "@/types/app";
 import type { Context } from "hono";
 import { describe, expect, it, vi } from "vitest";
+
+import { AuthHandler } from "@/modules/auth/handler";
+import type { AuthUsecase } from "@/modules/auth/usecase";
+import type { AppHonoEnv } from "@/types/app";
 
 const createTestContext = (
   overrides: Record<string, any> = {},
@@ -27,65 +27,77 @@ const createTestContext = (
   } as unknown as Context<AppHonoEnv>;
 };
 
-describe("loginHandler", () => {
-  it("should call usecase and return token", async () => {
-    const mockUsecase = vi.fn().mockResolvedValue({
-      accessToken: "token123",
-      user: { id: "1", email: "test@test.com", name: "Test", role: "user" },
-    });
-    const handler = createLoginHandler(mockUsecase);
-    const c = createTestContext({
-      body: { email: "test@test.com", password: "secret123" },
-    });
-
-    await handler(c);
-
-    expect(mockUsecase).toHaveBeenCalledOnce();
-    expect(c.json).toHaveBeenCalledWith(
-      expect.objectContaining({ success: true }),
-    );
-  });
-
-  it("should throw on invalid input", async () => {
-    const mockUsecase = vi.fn();
-    const handler = createLoginHandler(mockUsecase);
-    const c = createTestContext({
-      body: { email: "invalid" },
-    });
-
-    await expect(handler(c)).rejects.toThrow();
-    expect(mockUsecase).not.toHaveBeenCalled();
-  });
+const createMockUsecase = (): AuthUsecase => ({
+  login: vi.fn(),
+  me: vi.fn(),
 });
 
-describe("meHandler", () => {
-  it("should return current user", async () => {
-    const mockUsecase = vi.fn().mockResolvedValue({
-      id: "1",
-      email: "test@test.com",
-      name: "Test",
-      role: "user",
-    });
-    const handler = createMeHandler(mockUsecase);
-    const c = createTestContext({
-      user: { sub: "1", email: "test@test.com", role: "user" },
+describe("AuthHandler", () => {
+  describe("login", () => {
+    it("should call usecase and return token", async () => {
+      const mockUsecase = createMockUsecase();
+      mockUsecase.login = vi.fn().mockResolvedValue({
+        accessToken: "token123",
+        user: { id: "1", email: "test@test.com", name: "Test", role: "user" },
+      });
+
+      const handler = new AuthHandler(mockUsecase);
+      const c = createTestContext({
+        body: { email: "test@test.com", password: "secret123" },
+      });
+
+      await handler.login(c);
+
+      expect(mockUsecase.login).toHaveBeenCalledOnce();
+      expect(c.json).toHaveBeenCalledWith(
+        expect.objectContaining({ success: true }),
+      );
     });
 
-    await handler(c);
+    it("should throw on invalid input", async () => {
+      const mockUsecase = createMockUsecase();
+      const handler = new AuthHandler(mockUsecase);
+      const c = createTestContext({
+        body: { email: "invalid" },
+      });
 
-    expect(mockUsecase).toHaveBeenCalledWith("1");
+      await expect(handler.login(c)).rejects.toThrow();
+      expect(mockUsecase.login).not.toHaveBeenCalled();
+    });
   });
-});
 
-describe("logoutHandler", () => {
-  it("should return success", async () => {
-    const handler = createLogoutHandler();
-    const c = createTestContext();
+  describe("me", () => {
+    it("should return current user", async () => {
+      const mockUsecase = createMockUsecase();
+      mockUsecase.me = vi.fn().mockResolvedValue({
+        id: "1",
+        email: "test@test.com",
+        name: "Test",
+        role: "user",
+      });
 
-    await handler(c);
+      const handler = new AuthHandler(mockUsecase);
+      const c = createTestContext({
+        user: { sub: "1", email: "test@test.com", role: "user" },
+      });
 
-    expect(c.json).toHaveBeenCalledWith(
-      expect.objectContaining({ success: true, data: null }),
-    );
+      await handler.me(c);
+
+      expect(mockUsecase.me).toHaveBeenCalledWith("1");
+    });
+  });
+
+  describe("logout", () => {
+    it("should return success", async () => {
+      const mockUsecase = createMockUsecase();
+      const handler = new AuthHandler(mockUsecase);
+      const c = createTestContext();
+
+      await handler.logout(c);
+
+      expect(c.json).toHaveBeenCalledWith(
+        expect.objectContaining({ success: true, data: null }),
+      );
+    });
   });
 });

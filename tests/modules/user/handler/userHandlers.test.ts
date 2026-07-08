@@ -1,10 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import type { Context } from "hono";
-import { createCreateUserHandler } from "@/modules/user/handler/createUser";
-import { createGetUserHandler } from "@/modules/user/handler/getUser";
-import { createListUsersHandler } from "@/modules/user/handler/listUsers";
-import { createUpdateUserHandler } from "@/modules/user/handler/updateUser";
-import { createDeleteUserHandler } from "@/modules/user/handler/deleteUser";
+
+import { UserHandler } from "@/modules/user/handler";
+import type { UserUsecase } from "@/modules/user/usecase";
 import type { AppHonoEnv } from "@/types/app";
 
 const createTestContext = (overrides: Record<string, any> = {}): Context<AppHonoEnv> => {
@@ -24,108 +22,123 @@ const createTestContext = (overrides: Record<string, any> = {}): Context<AppHono
   return mockC;
 };
 
-describe("createUserHandler", () => {
-  it("should call usecase and return success", async () => {
-    const mockUsecase = vi.fn().mockResolvedValue({ id: "1", email: "test@test.com" });
-    const handler = createCreateUserHandler(mockUsecase);
-    const c = createTestContext({
-      body: { email: "test@test.com", name: "Test", password: "secret123" },
+const createMockUsecase = (): UserUsecase => ({
+  listUsers: vi.fn(),
+  getUser: vi.fn(),
+  createUser: vi.fn(),
+  updateUser: vi.fn(),
+  deleteUser: vi.fn(),
+});
+
+describe("UserHandler", () => {
+  describe("createUser", () => {
+    it("should call usecase and return success", async () => {
+      const mockUsecase = createMockUsecase();
+      mockUsecase.createUser = vi.fn().mockResolvedValue({ id: "1", email: "test@test.com" });
+      const handler = new UserHandler(mockUsecase);
+      const c = createTestContext({
+        body: { email: "test@test.com", name: "Test", password: "secret123" },
+      });
+
+      await handler.createUser(c);
+
+      expect(mockUsecase.createUser).toHaveBeenCalledOnce();
+      expect(c.json).toHaveBeenCalledWith(
+        expect.objectContaining({ success: true, data: expect.objectContaining({ id: "1" }) }),
+      );
     });
 
-    await handler(c);
+    it("should throw on invalid input", async () => {
+      const mockUsecase = createMockUsecase();
+      const handler = new UserHandler(mockUsecase);
+      const c = createTestContext({
+        body: { email: "invalid" },
+      });
 
-    expect(mockUsecase).toHaveBeenCalledOnce();
-    expect(c.json).toHaveBeenCalledWith(
-      expect.objectContaining({ success: true, data: expect.objectContaining({ id: "1" }) }),
-    );
+      await expect(handler.createUser(c)).rejects.toThrow();
+      expect(mockUsecase.createUser).not.toHaveBeenCalled();
+    });
   });
 
-  it("should throw on invalid input", async () => {
-    const mockUsecase = vi.fn();
-    const handler = createCreateUserHandler(mockUsecase);
-    const c = createTestContext({
-      body: { email: "invalid" },
+  describe("getUser", () => {
+    it("should return user when found", async () => {
+      const mockUsecase = createMockUsecase();
+      mockUsecase.getUser = vi.fn().mockResolvedValue({ id: "1", email: "test@test.com" });
+      const handler = new UserHandler(mockUsecase);
+      const c = createTestContext({ params: { id: "1" } });
+
+      await handler.getUser(c);
+
+      expect(mockUsecase.getUser).toHaveBeenCalledWith("1");
     });
 
-    await expect(handler(c)).rejects.toThrow();
-    expect(mockUsecase).not.toHaveBeenCalled();
-  });
-});
+    it("should throw when no id provided", async () => {
+      const mockUsecase = createMockUsecase();
+      const handler = new UserHandler(mockUsecase);
 
-describe("getUserHandler", () => {
-  it("should return user when found", async () => {
-    const mockUsecase = vi.fn().mockResolvedValue({ id: "1", email: "test@test.com" });
-    const handler = createGetUserHandler(mockUsecase);
-    const c = createTestContext({ params: { id: "1" } });
+      const c = createTestContext({ params: {} });
 
-    await handler(c);
-
-    expect(mockUsecase).toHaveBeenCalledWith("1");
+      await expect(handler.getUser(c)).rejects.toThrow("User ID is required");
+    });
   });
 
-  it("should throw when no id provided", async () => {
-    const mockUsecase = vi.fn();
-    const handler = createGetUserHandler(mockUsecase);
+  describe("listUsers", () => {
+    it("should pass parsed query to usecase", async () => {
+      const mockUsecase = createMockUsecase();
+      mockUsecase.listUsers = vi.fn().mockResolvedValue({ data: [], total: 0 });
+      const handler = new UserHandler(mockUsecase);
+      const c = createTestContext({ query: { page: "1", limit: "10" } });
 
-    const c = createTestContext({ params: {} });
+      await handler.listUsers(c);
 
-    await expect(handler(c)).rejects.toThrow("User ID is required");
+      expect(mockUsecase.listUsers).toHaveBeenCalledWith(
+        expect.objectContaining({ page: 1, limit: 10 }),
+      );
+    });
   });
-});
 
-describe("listUsersHandler", () => {
-  it("should pass parsed query to usecase", async () => {
-    const mockUsecase = vi.fn().mockResolvedValue({ data: [], total: 0 });
-    const handler = createListUsersHandler(mockUsecase);
-    const c = createTestContext({ query: { page: "1", limit: "10" } });
+  describe("updateUser", () => {
+    it("should update user successfully", async () => {
+      const mockUsecase = createMockUsecase();
+      mockUsecase.updateUser = vi.fn().mockResolvedValue({ id: "1", name: "Updated" });
+      const handler = new UserHandler(mockUsecase);
+      const c = createTestContext({
+        params: { id: "1" },
+        body: { name: "Updated" },
+      });
 
-    await handler(c);
+      await handler.updateUser(c);
 
-    expect(mockUsecase).toHaveBeenCalledWith(
-      expect.objectContaining({ page: 1, limit: 10 }),
-    );
-  });
-});
-
-describe("updateUserHandler", () => {
-  it("should update user successfully", async () => {
-    const mockUsecase = vi.fn().mockResolvedValue({ id: "1", name: "Updated" });
-    const handler = createUpdateUserHandler(mockUsecase);
-    const c = createTestContext({
-      params: { id: "1" },
-      body: { name: "Updated" },
+      expect(mockUsecase.updateUser).toHaveBeenCalledWith("1", { name: "Updated" });
     });
 
-    await handler(c);
+    it("should throw when no id provided", async () => {
+      const mockUsecase = createMockUsecase();
+      const handler = new UserHandler(mockUsecase);
+      const c = createTestContext({ params: {}, body: {} });
 
-    expect(mockUsecase).toHaveBeenCalledWith("1", { name: "Updated" });
+      await expect(handler.updateUser(c)).rejects.toThrow("User ID is required");
+    });
   });
 
-  it("should throw when no id provided", async () => {
-    const mockUsecase = vi.fn();
-    const handler = createUpdateUserHandler(mockUsecase);
-    const c = createTestContext({ params: {}, body: {} });
+  describe("deleteUser", () => {
+    it("should delete user successfully", async () => {
+      const mockUsecase = createMockUsecase();
+      mockUsecase.deleteUser = vi.fn().mockResolvedValue(undefined);
+      const handler = new UserHandler(mockUsecase);
+      const c = createTestContext({ params: { id: "1" } });
 
-    await expect(handler(c)).rejects.toThrow("User ID is required");
-  });
-});
+      await handler.deleteUser(c);
 
-describe("deleteUserHandler", () => {
-  it("should delete user successfully", async () => {
-    const mockUsecase = vi.fn().mockResolvedValue(undefined);
-    const handler = createDeleteUserHandler(mockUsecase);
-    const c = createTestContext({ params: { id: "1" } });
+      expect(mockUsecase.deleteUser).toHaveBeenCalledWith("1");
+    });
 
-    await handler(c);
+    it("should throw when no id provided", async () => {
+      const mockUsecase = createMockUsecase();
+      const handler = new UserHandler(mockUsecase);
+      const c = createTestContext({ params: {} });
 
-    expect(mockUsecase).toHaveBeenCalledWith("1");
-  });
-
-  it("should throw when no id provided", async () => {
-    const mockUsecase = vi.fn();
-    const handler = createDeleteUserHandler(mockUsecase);
-    const c = createTestContext({ params: {} });
-
-    await expect(handler(c)).rejects.toThrow("User ID is required");
+      await expect(handler.deleteUser(c)).rejects.toThrow("User ID is required");
+    });
   });
 });
