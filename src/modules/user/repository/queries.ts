@@ -3,7 +3,7 @@ import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 
 import { users } from "@/db/schema";
 import type * as schema from "@/db/schema";
-import { getLogger } from "@/lib/requestContext";
+import { getLogger } from "@/utils/requestContext";
 
 export type UserRow = {
   id: string;

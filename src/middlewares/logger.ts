@@ -3,7 +3,7 @@ import { createMiddleware } from "hono/factory";
 
 import type { AppHonoEnv } from "@/types/app";
 import { createChildLogger } from "@/utils/logger";
-import { requestContext } from "@/lib/requestContext";
+import { requestContext } from "@/utils/requestContext";
 
 const getRequestLogLevel = (status: number): "info" | "warn" | "error" => {
   if (status >= 500) {

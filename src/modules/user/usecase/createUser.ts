@@ -1,6 +1,6 @@
 import type { UserRepository } from "@/modules/user/repository";
 import { ConflictError, InternalServerError } from "@/middlewares/error-handler";
-import { getLogger } from "@/lib/requestContext";
+import { getLogger } from "@/utils/requestContext";
 
 export type CreateUserInput = {
   email: string;

@@ -1,6 +1,6 @@
 import type { AuthRepository } from "@/modules/auth/repository";
 import { NotFoundError } from "@/middlewares/error-handler";
-import { getLogger } from "@/lib/requestContext";
+import { getLogger } from "@/utils/requestContext";
 
 export type MeOutput = {
   id: string;

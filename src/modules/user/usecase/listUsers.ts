@@ -1,5 +1,5 @@
 import type { UserRepository } from "@/modules/user/repository";
-import { getLogger } from "@/lib/requestContext";
+import { getLogger } from "@/utils/requestContext";
 
 export type ListUsersInput = {
   page: number;

@@ -4,7 +4,7 @@ import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { users } from "@/db/schema";
 import type * as schema from "@/db/schema";
 import type { UserRow } from "./queries";
-import { getLogger } from "@/lib/requestContext";
+import { getLogger } from "@/utils/requestContext";
 
 export const createUserCommands = (dbInstance: PostgresJsDatabase<typeof schema>) => ({
   insertUser: async (

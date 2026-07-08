@@ -1,6 +1,6 @@
 import type { UserRepository } from "@/modules/user/repository";
 import { NotFoundError } from "@/middlewares/error-handler";
-import { getLogger } from "@/lib/requestContext";
+import { getLogger } from "@/utils/requestContext";
 
 export type GetUserOutput = {
   id: string;

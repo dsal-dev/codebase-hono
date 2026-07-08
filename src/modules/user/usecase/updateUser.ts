@@ -4,7 +4,7 @@ import {
   ConflictError,
   InternalServerError,
 } from "@/middlewares/error-handler";
-import { getLogger } from "@/lib/requestContext";
+import { getLogger } from "@/utils/requestContext";
 
 export type UpdateUserInput = {
   email?: string | undefined;

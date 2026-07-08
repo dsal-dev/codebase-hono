@@ -5,7 +5,7 @@ import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 import { env } from "@/config/env";
 import type { AppHonoEnv } from "@/types/app";
-import { getLogger } from "@/lib/requestContext";
+import { getLogger } from "@/utils/requestContext";
 import { errorResponse } from "@/utils/response";
 
 /**

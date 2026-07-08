@@ -3,7 +3,7 @@ import { Jwt } from "hono/utils/jwt";
 import { env } from "@/config/env";
 import type { AuthRepository } from "@/modules/auth/repository";
 import { UnauthorizedError } from "@/middlewares/error-handler";
-import { getLogger } from "@/lib/requestContext";
+import { getLogger } from "@/utils/requestContext";
 
 export type LoginInput = {
   email: string;
