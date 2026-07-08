@@ -1,5 +1,6 @@
 import type { AuthRepository } from "@/modules/auth/repository";
 import { NotFoundError } from "@/middlewares/error-handler";
+import { getOrSet } from "@/utils/cache";
 import { getLogger } from "@/utils/requestContext";
 
 export type MeOutput = {
@@ -16,7 +17,11 @@ export const createMeUsecase = (authRepo: AuthRepository): MeUsecase => {
     const logger = getLogger();
     logger.info({ userId }, "Fetching current user");
 
-    const user = await authRepo.findUserById(userId);
+    const user = await getOrSet(
+      `auth:me:${userId}`,
+      () => authRepo.findUserById(userId),
+      300,
+    );
 
     if (!user) {
       throw new NotFoundError("User not found");

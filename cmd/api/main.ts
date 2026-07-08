@@ -1,5 +1,5 @@
 import { env } from "@/config/env";
-import { closeDatabase } from "@/db";
+import { closeDatabase, closeRedis } from "@/db";
 import app from "@/app";
 import { startQueue, stopQueue } from "@/queue";
 import { logger } from "@/utils/logger";
@@ -13,6 +13,7 @@ const shutdown = async (signal: string) => {
   logger.info({ signal }, "Shutting down gracefully");
   await stopQueue();
   await closeDatabase();
+  await closeRedis();
   process.exit(0);
 };
 

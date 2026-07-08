@@ -18,6 +18,7 @@ type AppEnv = {
   JWT_SECRET: string;
   QUEUE_DATABASE_URL: string;
   QUEUE_ENABLED: boolean;
+  REDIS_URL: string;
 };
 
 const required = (key: keyof AppEnv): string => {
@@ -79,4 +80,5 @@ export const env: AppEnv = {
   JWT_SECRET: required("JWT_SECRET"),
   QUEUE_DATABASE_URL: process.env.QUEUE_DATABASE_URL ?? required("DATABASE_URL"),
   QUEUE_ENABLED: process.env.QUEUE_ENABLED !== "false",
+  REDIS_URL: process.env.REDIS_URL ?? "",
 };
