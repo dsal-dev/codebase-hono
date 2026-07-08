@@ -1,99 +1,116 @@
 # Hono Drizzle API Template
 
-Backend REST API scaffold menggunakan Bun, TypeScript, Hono, Drizzle ORM, dan PostgreSQL. Project ini disiapkan sebagai template standar untuk memulai backend baru dengan struktur yang modular, strict, dan mudah dikembangkan.
+Backend REST API scaffold menggunakan Bun, TypeScript, Hono, Drizzle ORM, dan PostgreSQL.  
+Mengadopsi **Clean Architecture** dengan pemisahan layer handler → usecase → repository untuk setiap module fitur.
 
 ## Tech Stack
 
 | Layer      | Teknologi                 |
 | ---------- | ------------------------- |
 | Runtime    | Bun                       |
-| Bahasa     | TypeScript                |
+| Bahasa     | TypeScript (strict)       |
 | Framework  | Hono                      |
 | ORM        | Drizzle ORM               |
 | Database   | PostgreSQL                |
 | Validation | Zod + @hono/zod-validator |
-| Logging    | Pino                      |
+| Auth       | JWT (hono/utils/jwt)      |
+| Logging    | Pino + AsyncLocalStorage  |
+| Rate Limit | hono-rate-limiter         |
 
 ## Tree Structure
 
 ```txt
 .
 ├── src/
-│   ├── config/
-│   │   └── env.ts
+│   ├── config/          # Validasi dan ekspor environment variables yang typed
 │   ├── db/
-│   │   ├── migrations/
-│   │   │   └── .gitkeep
-│   │   ├── schema/
-│   │   │   └── index.ts
-│   │   └── index.ts
+│   │   ├── migrations/  # Output file migration dari drizzle-kit
+│   │   ├── schema/      # Definisi tabel Drizzle ORM
+│   │   └── seeds/       # Data awal untuk development
+│   ├── middlewares/      # Middleware global (auth, admin, cors, logger, rate-limiter, security, error-handler)
+│   ├── modules/         # Setiap module fitur dengan arsitektur Clean Architecture
+│   │   ├── auth/        # Autentikasi (login, logout, me)
+│   │   │   ├── handler/     # HTTP request/response handler
+│   │   │   ├── repository/  # Akses database (queries & commands)
+│   │   │   ├── schema/      # Validasi Zod
+│   │   │   └── usecase/     # Business logic
+│   │   └── user/        # Manajemen user CRUD (admin-only)
+│   │       ├── handler/
+│   │       ├── repository/
+│   │       ├── schema/
+│   │       └── usecase/
+│   ├── routes/          # Registry utama route aplikasi
+│   ├── types/           # Shared TypeScript types (Hono env, API response)
+│   ├── utils/           # Helper utilities (logger, pagination, request context, response builder)
+│   ├── app.ts           # Inisialisasi Hono app dan pemasangan middleware
+│   └── index.ts         # Entry point server Bun
+├── tests/               # Test suite per modul (mirror struktur src/)
+│   ├── config/
 │   ├── middlewares/
-│   │   ├── cors.ts
-│   │   ├── error-handler.ts
-│   │   ├── logger.ts
-│   │   └── security.ts
 │   ├── modules/
-│   │   └── example/
-│   │       ├── example.handler.ts
-│   │       ├── example.routes.ts
-│   │       └── example.schema.ts
-│   ├── routes/
-│   │   └── index.ts
-│   ├── types/
-│   │   ├── app.ts
-│   │   └── common.ts
-│   ├── utils/
-│   │   ├── logger.ts
-│   │   └── response.ts
-│   └── index.ts
-├── .env.example
-├── .gitignore
-├── bun.lock
-├── drizzle.config.ts
+│   │   ├── auth/
+│   │   └── user/
+│   └── utils/
+├── .env.example         # Contoh environment variables
+├── docker-compose.yml   # PostgreSQL lokal untuk development
+├── drizzle.config.ts    # Konfigurasi Drizzle Kit
 ├── package.json
-├── prompt-scaffolding-backend.md
-├── README.md
-└── tsconfig.json
+├── tsconfig.json        # TypeScript strict
+└── vitest.config.ts     # Konfigurasi Vitest
 ```
 
-## Fungsi Struktur Project
+## Arsitektur
 
-| Path                                     | Fungsi                                                                                                                                                                                   |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/index.ts`                           | Entry point aplikasi. Menginisialisasi Hono app, memasang middleware global, mendaftarkan route, memasang error handler, dan menjalankan server Bun.                                     |
-| `src/config/env.ts`                      | Tempat validasi dan ekspor konfigurasi environment yang typed. Semua konfigurasi runtime wajib diambil dari sini, bukan langsung dari `process.env`.                                     |
-| `src/db/index.ts`                        | Setup koneksi PostgreSQL menggunakan `postgres` dan instance Drizzle ORM yang siap digunakan di seluruh aplikasi.                                                                        |
-| `src/db/schema/index.ts`                 | Single entry point untuk semua schema Drizzle. Saat ini berisi placeholder table `users`.                                                                                                |
-| `src/db/migrations/`                     | Direktori output file migration yang dibuat oleh `drizzle-kit generate`.                                                                                                                 |
-| `src/middlewares/logger.ts`              | Middleware request logger berbasis Pino untuk mencatat method, path, status, response time, dan `requestId`. Middleware ini juga memasang child logger request-scoped ke `c.var.logger`. |
-| `src/middlewares/cors.ts`                | Middleware konfigurasi CORS global menggunakan `hono/cors`.                                                                                                                              |
-| `src/middlewares/security.ts`            | Middleware security headers menggunakan `hono/secure-headers`.                                                                                                                           |
-| `src/middlewares/error-handler.ts`       | Centralized error handler untuk menjaga format response error tetap konsisten. Juga menyediakan `AppError` untuk error aplikasi.                                                         |
-| `src/routes/index.ts`                    | Registry utama route aplikasi. Semua module route dipasang di sini dengan prefix `/api/v1`.                                                                                              |
-| `src/modules/example/`                   | Contoh struktur module fitur. Digunakan sebagai pola saat menambahkan module baru.                                                                                                       |
-| `src/modules/example/example.routes.ts`  | Definisi route untuk example module.                                                                                                                                                     |
-| `src/modules/example/example.handler.ts` | Handler route untuk example module. Logic request-response module ditempatkan di sini.                                                                                                   |
-| `src/modules/example/example.schema.ts`  | Schema Zod untuk validasi request/response module.                                                                                                                                       |
-| `src/types/app.ts`                       | Shared Hono environment types untuk request-scoped variables seperti `logger` dan `requestId`.                                                                                           |
-| `src/types/common.ts`                    | Shared TypeScript types seperti `ApiResponse`, `ApiSuccessResponse`, `ApiErrorResponse`, dan `PaginationMeta`.                                                                           |
-| `src/utils/logger.ts`                    | Instance Pino logger utama dan helper `createChildLogger` agar logging modular dan reusable.                                                                                             |
-| `src/utils/response.ts`                  | Helper response API agar format sukses dan error konsisten.                                                                                                                              |
-| `drizzle.config.ts`                      | Konfigurasi Drizzle Kit untuk schema, migration output, dan koneksi database.                                                                                                            |
-| `tsconfig.json`                          | Konfigurasi TypeScript strict untuk Bun + Hono, termasuk path alias `@/*`.                                                                                                               |
-| `package.json`                           | Metadata project, scripts, dependencies, dan devDependencies.                                                                                                                            |
-| `.env.example`                           | Contoh environment variable yang wajib disiapkan sebelum menjalankan aplikasi.                                                                                                           |
-| `.gitignore`                             | Daftar file/folder yang tidak perlu masuk version control.                                                                                                                               |
+Setiap module fitur mengikuti pola **Clean Architecture** dengan dependency injection sederhana:
 
-## API Default
+```
+routes → handler → usecase → repository → db
+```
 
-| Method | Path               | Fungsi                                           |
-| ------ | ------------------ | ------------------------------------------------ |
-| `GET`  | `/api/v1/health`   | Health check server dengan status dan timestamp. |
-| `GET`  | `/api/v1/examples` | Route contoh untuk menunjukkan pola module.      |
+- **routes** — mendefinisikan endpoint dan middleware per-module
+- **handler** — menangani HTTP request/response, validasi input
+- **usecase** — business logic murni, tidak tergantung HTTP
+- **repository** — akses database (queries & commands terpisah)
+- **index.ts** — wiring dependency injection (manual DI tanpa framework)
+
+Module saat ini:
+
+| Module | Path                | Fungsi                          |
+| ------ | ------------------- | ------------------------------- |
+| Auth   | `src/modules/auth/` | Login, logout, dan current user |
+| User   | `src/modules/user/` | CRUD user (admin-only)          |
+
+## API Endpoints
+
+Prefix: `/api/v1`
+
+### Auth (Public)
+
+| Method | Path           | Auth    | Fungsi                            |
+| ------ | -------------- | ------- | --------------------------------- |
+| `POST` | `/auth/login`  | ✗       | Login, mengembalikan JWT token    |
+| `POST` | `/auth/logout` | ✗       | Logout                            |
+| `GET`  | `/auth/me`     | ✓ (JWT) | Ambil data user yang sedang login |
+
+### Users (Admin Only)
+
+| Method   | Path         | Auth            | Fungsi                 |
+| -------- | ------------ | --------------- | ---------------------- |
+| `GET`    | `/users`     | ✓ (JWT + Admin) | List user (pagination) |
+| `GET`    | `/users/:id` | ✓ (JWT + Admin) | Detail user            |
+| `POST`   | `/users`     | ✓ (JWT + Admin) | Buat user baru         |
+| `PUT`    | `/users/:id` | ✓ (JWT + Admin) | Update user            |
+| `DELETE` | `/users/:id` | ✓ (JWT + Admin) | Hapus user             |
+
+### Health
+
+| Method | Path      | Fungsi                                  |
+| ------ | --------- | --------------------------------------- |
+| `GET`  | `/health` | Health check server (tanpa autentikasi) |
 
 ## Response Format
 
-Response sukses menggunakan format berikut:
+Sukses (200/201):
 
 ```json
 {
@@ -104,7 +121,7 @@ Response sukses menggunakan format berikut:
 }
 ```
 
-Response error menggunakan format berikut:
+Error:
 
 ```json
 {
@@ -115,33 +132,57 @@ Response error menggunakan format berikut:
 }
 ```
 
+### Error Codes
+
+| HTTP Status | Code                    |
+| ----------- | ----------------------- |
+| 400         | `BAD_REQUEST`           |
+| 401         | `UNAUTHORIZED`          |
+| 403         | `FORBIDDEN`             |
+| 404         | `NOT_FOUND`             |
+| 409         | `CONFLICT`              |
+| 422         | `UNPROCESSABLE_ENTITY`  |
+| 429         | `TOO_MANY_REQUESTS`     |
+| 500         | `INTERNAL_SERVER_ERROR` |
+
 ## Environment Variables
 
-Buat file `.env` berdasarkan `.env.example`.
+Buat file `.env` berdasarkan `.env.example`:
 
 ```env
+APP_NAME=codebase-hono
+
+# App
 NODE_ENV=development
 PORT=3000
 LOG_LEVEL=debug
+
+# Database
 DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+
+# Auth
+JWT_SECRET=change-me-to-a-random-secret
 ```
 
-`LOG_LEVEL` bersifat opsional. Jika tidak diisi, default-nya `debug` untuk non-production dan `info` untuk production.
+`LOG_LEVEL` bersifat opsional. Default: `debug` untuk development, `info` untuk production.
 
 ## Scripts
 
-| Script                | Fungsi                                                |
-| --------------------- | ----------------------------------------------------- |
-| `bun run dev`         | Menjalankan server development dengan watch mode.     |
-| `bun run start`       | Menjalankan aplikasi menggunakan Bun.                 |
-| `bun run build`       | Build aplikasi ke direktori `dist`.                   |
-| `bun run typecheck`   | Menjalankan TypeScript type checking tanpa emit file. |
-| `bun run db:generate` | Generate migration Drizzle berdasarkan schema.        |
-| `bun run db:migrate`  | Menjalankan migration ke database.                    |
-| `bun run db:studio`   | Membuka Drizzle Studio.                               |
-| `bun run db:push`     | Push schema langsung ke database.                     |
+| Script                | Fungsi                                           |
+| --------------------- | ------------------------------------------------ |
+| `bun run dev`         | Menjalankan server development dengan watch mode |
+| `bun run start`       | Menjalankan aplikasi menggunakan Bun             |
+| `bun run build`       | Build aplikasi ke direktori `dist`               |
+| `bun run typecheck`   | TypeScript type checking tanpa emit file         |
+| `bun run test`        | Menjalankan seluruh test suite                   |
+| `bun run test:watch`  | Menjalankan test dalam watch mode                |
+| `bun run db:generate` | Generate migration Drizzle berdasarkan schema    |
+| `bun run db:migrate`  | Menjalankan migration ke database                |
+| `bun run db:studio`   | Membuka Drizzle Studio                           |
+| `bun run db:push`     | Push schema langsung ke database                 |
+| `bun run db:seed`     | Seed data awal (admin + user contoh)             |
 
-## Setup
+## Setup Lokal
 
 1. Install dependencies.
 
@@ -149,38 +190,74 @@ DATABASE_URL=postgresql://user:password@localhost:5432/dbname
 bun install
 ```
 
-2. Buat file `.env`.
+2. Jalankan PostgreSQL via Docker (opsional).
+
+```bash
+docker compose up -d
+```
+
+3. Buat file `.env`.
 
 ```bash
 cp .env.example .env
 ```
 
-3. Sesuaikan nilai `DATABASE_URL`, `PORT`, dan `NODE_ENV`.
+4. Sesuaikan nilai `DATABASE_URL`, `PORT`, `NODE_ENV`, dan `JWT_SECRET`.
 
-4. Generate dan jalankan migration jika database sudah tersedia.
+5. Generate dan jalankan migration.
 
 ```bash
 bun run db:generate
 bun run db:migrate
 ```
 
-5. Jalankan development server.
+6. (Opsional) Seed data awal.
+
+```bash
+bun run db:seed
+```
+
+7. Jalankan development server.
 
 ```bash
 bun run dev
 ```
 
-Server akan berjalan di port yang didefinisikan pada `PORT`.
+Server akan berjalan di `http://localhost:3000`.
+
+## Middleware Global
+
+Semua middleware dipasang di `src/app.ts` dalam urutan berikut:
+
+1. **Logger** — request-scoped Pino logger dengan `requestId` dan `AsyncLocalStorage`
+2. **Rate Limiter** — 100 request per 15 menit per IP (dilewati untuk `/health`)
+3. **CORS** — izin semua origin
+4. **Security Headers** — secure headers via `hono/secure-headers`
+5. **Error Handler** — centralized error handler untuk semua error yang tidak tertangani
+6. **404 Handler** — response konsisten untuk route yang tidak ditemukan
 
 ## Menambahkan Module Baru
 
-Gunakan pola folder berikut untuk setiap fitur baru:
+1. Buat folder `src/modules/<nama-module>/` dengan struktur berikut:
 
-```txt
-src/modules/<module-name>/
-├── <module-name>.routes.ts
-├── <module-name>.handler.ts
-└── <module-name>.schema.ts
+```
+src/modules/<nama-module>/
+├── handler/
+│   ├── index.ts
+│   └── <action>.ts
+├── repository/
+│   ├── index.ts
+│   ├── queries.ts
+│   └── commands.ts
+├── schema/
+│   └── <nama-module>Schema.ts
+├── usecase/
+│   ├── index.ts
+│   └── <action>.ts
+├── <nama-module>.routes.ts
+└── index.ts
 ```
 
-Setelah module dibuat, import dan mount route-nya di `src/routes/index.ts` agar tersedia melalui prefix `/api/v1`.
+2. Ikuti pola dependency injection yang sudah ada (repository → usecase → handler → routes).
+
+3. Mount module di `src/routes/index.ts`.
