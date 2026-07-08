@@ -16,6 +16,8 @@ type AppEnv = {
   DATABASE_URL: string;
   LOG_LEVEL: LogLevel;
   JWT_SECRET: string;
+  QUEUE_DATABASE_URL: string;
+  QUEUE_ENABLED: boolean;
 };
 
 const required = (key: keyof AppEnv): string => {
@@ -75,4 +77,6 @@ export const env: AppEnv = {
     process.env.LOG_LEVEL ?? (nodeEnv === "production" ? "info" : "debug"),
   ),
   JWT_SECRET: required("JWT_SECRET"),
+  QUEUE_DATABASE_URL: process.env.QUEUE_DATABASE_URL ?? required("DATABASE_URL"),
+  QUEUE_ENABLED: process.env.QUEUE_ENABLED !== "false",
 };
