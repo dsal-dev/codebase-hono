@@ -1,2 +1,2 @@
-export { db, dbClient, closeDatabase } from "./database";
+export { db, dbClient, closeDatabase, type Database } from "./database";
 export { getRedis, closeRedis } from "./redis";

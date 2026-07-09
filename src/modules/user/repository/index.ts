@@ -1,8 +1,7 @@
 import { eq, count, asc } from "drizzle-orm";
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 
 import { users } from "@/db/schema";
-import type * as schema from "@/db/schema";
+import type { Database } from "@/db";
 import { getLogger } from "@/utils/requestContext";
 
 export type UserRow = {
@@ -37,7 +36,7 @@ export interface UserRepository {
 }
 
 export class UserDbRepository implements UserRepository {
-  constructor(private db: PostgresJsDatabase<typeof schema>) {}
+  constructor(private db: Database) {}
 
   async findAllUsers(
     page: number,

@@ -1,8 +1,7 @@
 import { eq } from "drizzle-orm";
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 
 import { users } from "@/db/schema";
-import type * as schema from "@/db/schema";
+import type { Database } from "@/db";
 import { getLogger } from "@/utils/requestContext";
 
 export type UserRecord = {
@@ -19,7 +18,7 @@ export interface AuthRepository {
 }
 
 export class AuthDbRepository implements AuthRepository {
-  constructor(private db: PostgresJsDatabase<typeof schema>) {}
+  constructor(private db: Database) {}
 
   async findUserByEmail(email: string): Promise<UserRecord | undefined> {
     const logger = getLogger();
