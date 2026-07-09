@@ -19,6 +19,12 @@ type AppEnv = {
   QUEUE_DATABASE_URL: string;
   QUEUE_ENABLED: boolean;
   REDIS_URL: string;
+  STORAGE_ENDPOINT: string;
+  STORAGE_REGION: string;
+  STORAGE_ACCESS_KEY: string;
+  STORAGE_SECRET_KEY: string;
+  STORAGE_BUCKET: string;
+  STORAGE_USE_SSL: boolean;
 };
 
 const required = (key: keyof AppEnv): string => {
@@ -81,4 +87,10 @@ export const env: AppEnv = {
   QUEUE_DATABASE_URL: process.env.QUEUE_DATABASE_URL ?? required("DATABASE_URL"),
   QUEUE_ENABLED: process.env.QUEUE_ENABLED !== "false",
   REDIS_URL: process.env.REDIS_URL ?? "",
+  STORAGE_ENDPOINT: required("STORAGE_ENDPOINT"),
+  STORAGE_REGION: required("STORAGE_REGION"),
+  STORAGE_ACCESS_KEY: required("STORAGE_ACCESS_KEY"),
+  STORAGE_SECRET_KEY: required("STORAGE_SECRET_KEY"),
+  STORAGE_BUCKET: required("STORAGE_BUCKET"),
+  STORAGE_USE_SSL: process.env.STORAGE_USE_SSL === "true",
 };

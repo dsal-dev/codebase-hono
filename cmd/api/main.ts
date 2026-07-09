@@ -2,6 +2,7 @@ import { env } from "@/config/env";
 import { closeDatabase, closeRedis } from "@/db";
 import app from "@/app";
 import { startQueue, stopQueue } from "@/queue";
+import { closeS3Client } from "@/storage";
 import { logger } from "@/utils/logger";
 
 const server = Bun.serve({
@@ -12,6 +13,7 @@ const server = Bun.serve({
 const shutdown = async (signal: string) => {
   logger.info({ signal }, "Shutting down gracefully");
   await stopQueue();
+  await closeS3Client();
   await closeDatabase();
   await closeRedis();
   process.exit(0);
